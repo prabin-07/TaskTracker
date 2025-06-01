@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './login.css';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Username:', username);
     console.log('Password:', password);
     console.log('User Type:', userType);
+    
+    if (userType === 'admin') {
+      navigate('/');
+    }
   };
 
   return (
