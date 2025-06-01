@@ -17,9 +17,9 @@ const NAVIGATION = [
   { segment: 'dashboard', title: 'Dashboard', icon: <DashboardIcon /> },
   { segment: 'tasks', title: 'Tasks', icon: <TaskIcon /> ,
     children: [
-      { segment: 'task1', title: 'Task 1', icon: <TaskIcon /> },
-      { segment: 'task2', title: 'Task 2', icon: <TaskIcon /> },
-      { segment: 'task3', title: 'Task 3', icon: <TaskIcon /> },
+      { segment: '', title: 'Task 1', icon: <TaskIcon /> },
+      { segment: '', title: 'Task 2', icon: <TaskIcon /> },
+      { segment: '', title: 'Task 3', icon: <TaskIcon /> },
     ]
   },
   { segment: 'Members', title: 'Members', icon: <GroupIcon />,
