@@ -5,6 +5,7 @@ import Tasks from './components/Tasks';
 import Members from './components/Members';
 import './App.css';
 import React, { useState } from 'react';
+import Login from './components/Login';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -12,11 +13,12 @@ function App() {
   return (
     <BrowserRouter>
     <Routes>
+      <Route path="/login" element={<Login />} />
       <Route path="/" element={<DashboardLayoutShell/>}>
       <Route path="/" element={<Home />} />
       <Route path="dashboard" element={<Home />} />
       <Route path="Home" element={<Home />} />
-      <Route path="/task1" element={<Tasks/>} />
+      <Route path="/Tasks" element={<Tasks/>} />
       <Route path="Members" element={<Members />} />
       </Route>
     </Routes>
