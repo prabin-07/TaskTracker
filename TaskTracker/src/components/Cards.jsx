@@ -10,7 +10,6 @@ const StatCard = ({ title, value, progress, icon: Icon, color = '#f44336' }) => 
             {title}
           </Typography>
           <IconButton size="small">
-            <MoreVertIcon fontSize="small" />
           </IconButton>
         </Box>
 
@@ -52,3 +51,18 @@ const StatCard = ({ title, value, progress, icon: Icon, color = '#f44336' }) => 
 };
 
 export default StatCard;
+
+export const weeklyData = [
+  { day: 'Mon', value: 10 },
+  { day: 'Tue', value: 40 },
+  { day: 'Wed', value: 35 },
+  { day: 'Thu', value: 50 },
+  { day: 'Fri', value: 50 },
+  { day: 'Sat', value: 60 },
+  { day: 'Sun', value: 65 },
+];
+
+const total = weeklyData.reduce((sum, d) => sum + d.value, 0);
+const average = Math.round(total / weeklyData.length);
+const max = Math.max(...weeklyData.map(d => d.value));
+const min = Math.min(...weeklyData.map(d => d.value));

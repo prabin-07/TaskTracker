@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 
+const API_URL = 'http://localhost:5000/api/projects';
+
 const Tasks = () => {
-  const [projects, setProjects] = useState([
-    { id: 1, name: 'Web App', owner: 'Rahul', status: 'Active', deadline: '2025-06-15' },
-    { id: 2, name: 'UI Development', owner: 'Shyam', status: 'On Hold', deadline: '2025-07-01' },
-  ]);
+  const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({
     name: '',
     owner: '',
@@ -24,21 +23,55 @@ const Tasks = () => {
   });
   const [showForm, setShowForm] = useState(false);
 
+  // Fetch all projects on mount
+  useEffect(() => {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => setProjects(data.map(p => ({
+        id: p._id,
+        name: p.projectName,
+        owner: p.ownerName,
+        status: p.status,
+        deadline: p.deadline
+      }))))
+      .catch(err => console.error(err));
+  }, []);
+
+  // Add a new project
   const addProject = () => {
     if (!newProject.name || !newProject.owner || !newProject.deadline) return;
-    const newEntry = {
-      id: Date.now(),
-      ...newProject,
-    };
-    setProjects(prev => [...prev, newEntry]);
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectName: newProject.name,
+        ownerName: newProject.owner,
+        status: newProject.status,
+        deadline: newProject.deadline
+      })
+    })
+      .then(res => res.json())
+      .then(added => setProjects(prev => [...prev, {
+        id: added._id,
+        name: added.projectName,
+        owner: added.ownerName,
+        status: added.status,
+        deadline: added.deadline
+      }]))
+      .catch(err => console.error(err));
     setNewProject({ name: '', owner: '', status: 'Active', deadline: '' });
     setShowForm(false);
   };
 
+  // Delete a project
   const deleteProject = id => {
-    setProjects(prev => prev.filter(project => project.id !== id));
+    fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(() => setProjects(prev => prev.filter(project => project.id !== id)))
+      .catch(err => console.error(err));
   };
 
+  // Start editing a project
   const startEditing = project => {
     setEditingId(project.id);
     setEditedProject({
@@ -49,13 +82,34 @@ const Tasks = () => {
     });
   };
 
+  // Save edited project
   const saveEdit = id => {
-    setProjects(prev =>
-      prev.map(project =>
-        project.id === id ? { ...project, ...editedProject } : project
-      )
-    );
-    setEditingId(null);
+    fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectName: editedProject.name,
+        ownerName: editedProject.owner,
+        status: editedProject.status,
+        deadline: editedProject.deadline
+      })
+    })
+      .then(res => res.json())
+      .then(updated => {
+        setProjects(prev =>
+          prev.map(project =>
+            project.id === id ? {
+              id: updated._id,
+              name: updated.projectName,
+              owner: updated.ownerName,
+              status: updated.status,
+              deadline: updated.deadline
+            } : project
+          )
+        );
+        setEditingId(null);
+      })
+      .catch(err => console.error(err));
   };
 
   return (
@@ -96,7 +150,6 @@ const Tasks = () => {
           <button onClick={addProject} style={styles.button}>Add Project</button>
         </div>
       )}
-
 
       <table className="table">
         <thead>

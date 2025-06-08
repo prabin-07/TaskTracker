@@ -15,7 +15,9 @@ const LoginForm = () => {
     console.log('User Type:', userType);
     
     if (userType === 'admin') {
-      navigate('/');
+      navigate('/admin');
+    } else if (userType === 'member') {
+      navigate('/team-member');
     }
   };
 

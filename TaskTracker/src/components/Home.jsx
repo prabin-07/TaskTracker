@@ -1,6 +1,12 @@
 import { Box, Stack } from '@mui/material';
-import StatCard from '../components/Cards';
+import StatCard, { weeklyData } from '../components/Cards';
 import {SouthWest,AccessTime,Folder,InsertDriveFile,} from '@mui/icons-material';
+import GraphComponent from './GraphComponent';
+
+const total = weeklyData.reduce((sum, d) => sum + d.value, 0);
+const average = Math.round(total / weeklyData.length);
+const max = Math.max(...weeklyData.map(d => d.value));
+const min = Math.min(...weeklyData.map(d => d.value));
 
 const Home = () => {
   return (
@@ -8,41 +14,42 @@ const Home = () => {
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
         <Box flex={1}>
           <StatCard
-            title="Weekly Activity"
-            value="90%"
-            progress={90}
+            title="Total Activity"
+            value={total}
+            progress={Math.round((total / (7 * 100)) * 100)}
             icon={SouthWest}
             color="#f44336"
           />
         </Box>
         <Box flex={1}>
           <StatCard
-            title="Worked This Week"
-            value="40:00:05"
-            progress={100}
+            title="Average Activity"
+            value={average}
+            progress={average}
             icon={AccessTime}
             color="#673ab7"
           />
         </Box>
         <Box flex={1}>
           <StatCard
-            title="Project Worked"
-            value="04"
-            progress={25}
+            title="Max Activity"
+            value={max}
+            progress={max}
             icon={Folder}
             color="#e91e63"
           />
         </Box>
         <Box flex={1}>
           <StatCard
-            title="Complete Project"
-            value="15"
-            progress={75}
+            title="Min Activity"
+            value={min}
+            progress={min}
             icon={InsertDriveFile}
             color="#ff9800"
           />
         </Box>
       </Stack>
+      <GraphComponent />
     </Box>
   );
 };
