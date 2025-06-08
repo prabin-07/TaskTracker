@@ -97,7 +97,7 @@ const Tasks = () => {
         </div>
       )}
 
-      {/* /Projects Table  */}
+
       <table className="table">
         <thead>
           <tr>
