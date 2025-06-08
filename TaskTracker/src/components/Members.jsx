@@ -8,6 +8,7 @@ const API_URL = 'http://localhost:5000/api/members';
 
 const Members = () => {
   const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [newMember, setNewMember] = useState({
     name: '',
     email: '',
@@ -22,19 +23,40 @@ const Members = () => {
     deadline: '',
   });
   const [showForm, setShowForm] = useState(false);
+  const loggedInMember = JSON.parse(localStorage.getItem('member'));
 
   // Fetch all members on mount
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => setUsers(data.map(m => ({
-        id: m._id,
-        name: m.memberName,
-        email: m.email,
-        role: m.role,
-        deadline: m.deadline
-      }))))
-      .catch(err => console.error(err));
+    const fetchData = () => {
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          setUsers(data.map(m => ({
+            id: m._id,
+            name: m.memberName,
+            email: m.email,
+            role: m.role,
+            deadline: m.deadline
+          })));
+          console.log('Fetched users:', data);
+        })
+        .catch(err => console.error(err));
+      fetch('http://localhost:5000/api/projects')
+        .then(res => res.json())
+        .then(data => {
+          setProjects(data);
+          console.log('Fetched projects:', data);
+        });
+    };
+
+    fetchData();
+
+    const handleTasksUpdated = () => fetchData();
+    window.addEventListener('tasksUpdated', handleTasksUpdated);
+
+    return () => {
+      window.removeEventListener('tasksUpdated', handleTasksUpdated);
+    };
   }, []);
 
   // Add a new member
@@ -116,6 +138,12 @@ const Members = () => {
     <section className="section">
       <h2>Members</h2>
 
+      {loggedInMember && (
+        <div style={{ marginBottom: 20, background: '#eaf4fc', padding: 10, borderRadius: 8 }}>
+          <strong>Logged-in Member:</strong> {loggedInMember.name} ({loggedInMember.email})
+        </div>
+      )}
+
       {showForm && (
         <div className="add-form">
           <input
@@ -152,7 +180,7 @@ const Members = () => {
       <table className="table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Member Name</th>
             <th>Email</th>
             <th>Deadline</th>
             <th>Role</th>

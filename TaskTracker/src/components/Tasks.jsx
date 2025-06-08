@@ -3,11 +3,13 @@ import '../App.css';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
+import Members from './Members';
 
 const API_URL = 'http://localhost:5000/api/projects';
 
 const Tasks = () => {
   const [projects, setProjects] = useState([]);
+  const [members, setMembers] = useState([]);
   const [newProject, setNewProject] = useState({
     name: '',
     owner: '',
@@ -22,6 +24,7 @@ const Tasks = () => {
     deadline: '',
   });
   const [showForm, setShowForm] = useState(false);
+  const loggedInMember = JSON.parse(localStorage.getItem('member'));
 
   // Fetch all projects on mount
   useEffect(() => {
@@ -32,9 +35,12 @@ const Tasks = () => {
         name: p.projectName,
         owner: p.ownerName,
         status: p.status,
-        deadline: p.deadline
+        deadline: p.deadline,
       }))))
       .catch(err => console.error(err));
+    fetch('http://localhost:5000/api/members')
+      .then(res => res.json())
+      .then(data => setMembers(data.map(m => ({ id: m._id, name: m.memberName }))));
   }, []);
 
   // Add a new project
@@ -47,17 +53,21 @@ const Tasks = () => {
         projectName: newProject.name,
         ownerName: newProject.owner,
         status: newProject.status,
-        deadline: newProject.deadline
+        deadline: newProject.deadline,
       })
     })
       .then(res => res.json())
-      .then(added => setProjects(prev => [...prev, {
-        id: added._id,
-        name: added.projectName,
-        owner: added.ownerName,
-        status: added.status,
-        deadline: added.deadline
-      }]))
+      .then(added => {
+        console.log('Project added response:', added);
+        setProjects(prev => [...prev, {
+          id: added._id,
+          name: added.projectName,
+          owner: added.ownerName,
+          status: added.status,
+          deadline: added.deadline,
+        }]);
+      })
+      .then(() => { window.dispatchEvent(new Event('tasksUpdated')); })
       .catch(err => console.error(err));
     setNewProject({ name: '', owner: '', status: 'Active', deadline: '' });
     setShowForm(false);
@@ -68,6 +78,7 @@ const Tasks = () => {
     fetch(`${API_URL}/${id}`, { method: 'DELETE' })
       .then(res => res.json())
       .then(() => setProjects(prev => prev.filter(project => project.id !== id)))
+      .then(() => { window.dispatchEvent(new Event('tasksUpdated')); })
       .catch(err => console.error(err));
   };
 
@@ -91,11 +102,12 @@ const Tasks = () => {
         projectName: editedProject.name,
         ownerName: editedProject.owner,
         status: editedProject.status,
-        deadline: editedProject.deadline
+        deadline: editedProject.deadline,
       })
     })
       .then(res => res.json())
       .then(updated => {
+        console.log('Project updated response:', updated);
         setProjects(prev =>
           prev.map(project =>
             project.id === id ? {
@@ -103,18 +115,25 @@ const Tasks = () => {
               name: updated.projectName,
               owner: updated.ownerName,
               status: updated.status,
-              deadline: updated.deadline
+              deadline: updated.deadline,
             } : project
           )
         );
         setEditingId(null);
       })
+      .then(() => { window.dispatchEvent(new Event('tasksUpdated')); })
       .catch(err => console.error(err));
   };
 
   return (
     <section className="section">
       <h2>Projects</h2>
+
+      {loggedInMember && (
+        <div style={{ marginBottom: 20, background: '#eaf4fc', padding: 10, borderRadius: 8 }}>
+          <strong>Logged-in Member:</strong> {loggedInMember.name} ({loggedInMember.email})
+        </div>
+      )}
 
       {showForm && (
         <div className="add-form" style={styles.formContainer}>
@@ -154,7 +173,7 @@ const Tasks = () => {
       <table className="table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Project Name</th>
             <th>Owner</th>
             <th>Status</th>
             <th>Deadline</th>

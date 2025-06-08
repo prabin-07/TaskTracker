@@ -15,9 +15,9 @@ import Home from './Home';
 
 const NAVIGATION = [
   { kind: 'header', title: 'Main items' },
-  { segment: 'dashboard', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'tasks', title: 'Tasks', icon: <TaskIcon /> },
-  { segment: 'members', title: 'Members', icon: <GroupIcon /> },
+  { segment: 'admin/dashboard', title: 'Dashboard', icon: <DashboardIcon /> },
+  { segment: 'admin/tasks', title: 'Tasks', icon: <TaskIcon /> },
+  { segment: 'admin/members', title: 'Members', icon: <GroupIcon /> },
   { kind: 'divider' },
   { segment: 'logout', title: 'Logout', icon: <LogoutIcon /> },
 ];
@@ -38,6 +38,8 @@ export default function DashboardLayoutShell() {
   const handleNavigation = (pathname) => {
     if (pathname === '/logout' || pathname === '/admin/logout') {
       navigate('/login');
+    } else {
+      navigate(pathname);
     }
   };
 

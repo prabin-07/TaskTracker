@@ -1,17 +1,40 @@
-import React from 'react';
-import { Box, Stack, Typography, LinearProgress, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Stack, Typography, LinearProgress, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem } from '@mui/material';
 import { useOutletContext } from 'react-router-dom';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SouthWestIcon from '@mui/icons-material/SouthWest';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-useEffect(() => {
-  document.title = 'Tasks - Team Member';
-}, []);
-
-const TeamMemberDashboard = ({ tasks }) => {
+const TeamMemberDashboard = () => {
   const { user } = useOutletContext();
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    document.title = 'Tasks - Team Member';
+    // Fetch tasks assigned to the current user
+    fetch(`http://localhost:5000/api/projects/assigned/${user?.id}`)
+      .then(res => res.json())
+      .then(data => setTasks(data))
+      .catch(err => console.error('Error fetching tasks:', err));
+  }, [user]);
+
+  const handleStatusChange = (taskId, newStatus) => {
+    fetch(`http://localhost:5000/api/projects/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: newStatus }),
+    })
+      .then(res => res.json())
+      .then(updatedTask => {
+        setTasks(tasks.map(task => 
+          task._id === taskId ? { ...task, status: updatedTask.status } : task
+        ));
+      })
+      .catch(err => console.error('Error updating task status:', err));
+  };
 
   const completedTasks = tasks.filter(task => task.status === 'Done').length;
   const totalTasks = tasks.length;
@@ -47,9 +70,16 @@ const TeamMemberDashboard = ({ tasks }) => {
     },
   ];
 
+  const loggedInMember = JSON.parse(localStorage.getItem('member'));
+
   return (
     <Box className="section">
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+      {loggedInMember && (
+        <div style={{ marginBottom: 20, background: '#eaf4fc', padding: 10, borderRadius: 8 }}>
+          <strong>Logged-in Member:</strong> {loggedInMember.name} ({loggedInMember.email})
+        </div>
+      )}
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} mb={4}>
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -106,6 +136,44 @@ const TeamMemberDashboard = ({ tasks }) => {
           );
         })}
       </Stack>
+
+      <Typography variant="h5" sx={{ mb: 3, color: 'text.primary' }}>
+        Assigned Tasks
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Task Name</TableCell>
+              <TableCell>Project</TableCell>
+              <TableCell>Deadline</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tasks.map((task) => (
+              <TableRow key={task._id}>
+                <TableCell>{task.projectName}</TableCell>
+                <TableCell>{task.ownerName}</TableCell>
+                <TableCell>{new Date(task.deadline).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <Select
+                    value={task.status}
+                    onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 120 }}
+                  >
+                    <MenuItem value="To Do">To Do</MenuItem>
+                    <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Done">Done</MenuItem>
+                  </Select>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };

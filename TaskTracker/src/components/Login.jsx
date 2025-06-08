@@ -1,23 +1,37 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './login.css';
 
+const ADMIN_EMAIL = 'admin@gmail.com'; // Set your admin email here
+const ADMIN_PASSWORD = 'admin123'; // Set your admin password here
+
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
-    console.log('User Type:', userType);
-    
-    if (userType === 'admin') {
+    setError('');
+    // Admin login
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       navigate('/admin');
-    } else if (userType === 'member') {
-      navigate('/team-member');
+      return;
+    }
+    // Member login
+    try {
+      const res = await fetch('http://localhost:5000/api/members');
+      const members = await res.json();
+      const foundMember = members.find(m => m.email === email && m.password === password);
+      if (foundMember) {
+        localStorage.setItem('member', JSON.stringify({ name: foundMember.memberName, email: foundMember.email }));
+        navigate('/team-member/dashboard');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch {
+      setError('Login failed. Please try again.');
     }
   };
 
@@ -25,18 +39,16 @@ const LoginForm = () => {
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
-
         <div className="input-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="email">Email:</label>
           <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-
         <div className="input-group">
           <label htmlFor="password">Password:</label>
           <input
@@ -47,29 +59,10 @@ const LoginForm = () => {
             required
           />
         </div>
-
-        <div className="input-group">
-          <label htmlFor="userType">User Type:</label>
-          <select
-            id="userType"
-            value={userType}
-            onChange={(e) => setUserType(e.target.value)}
-            required
-          >
-            <option value="">Select User</option>
-            <option value="admin">Admin</option>
-            <option value="member">Member</option> 
-          </select>
-        </div>
-
+        {error && <p className="error">{error}</p>}
         <button type="submit">Login</button>
-
-        <p style={{ textAlign: 'right' }}>
-          <a href="/forgot-password">Forgot Password?</a> 
-        </p>
-
         <p>
-          Don't have an account? <a href="/signup">Signup</a>
+          <Link to="/signup">Login as a member</Link>
         </p>
       </form>
     </div>

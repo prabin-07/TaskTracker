@@ -11,7 +11,7 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 const NAVIGATION = [
   { kind: 'header', title: 'Team Member' },
   { segment: 'dashboard', title: 'Dashboard', icon: <DashboardIcon /> },
-  { segment: 'tasks', title: 'My Tasks', icon: <TaskIcon /> },
+  { segment: 'assigned-tasks', title: 'My Tasks', icon: <TaskIcon /> },
   { segment: 'logout', title: 'Logout', icon: <LogoutIcon /> },
 ];
 
